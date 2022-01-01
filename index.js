@@ -10,6 +10,6 @@ const viewPath = path.join(__dirname, '/resources/views');
 app.set('view engine', 'hbs');
 app.set('views', viewPath);
 
-app.get('/', (req, res) => res.render('sketchpad'));
+app.get('/:image', (req, res) => res.render('sketchpad', { image: req.params.image }));
 
 app.listen('8000', () => console.log("Listining"));

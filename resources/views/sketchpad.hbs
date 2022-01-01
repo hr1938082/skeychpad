@@ -177,15 +177,19 @@
         title="Unorder list" onclick="unorder_list()">
         <i class="fa fa-list-ul"></i>
       </button>
-      <button id="save">Save</button>
     </div>
   </div>
+  <input type="hidden" value="http://104.248.174.124:5000/static/image/bricks/{{image}}" id="imageCatch" />
 </body>
 
 <script>
+  const imgCatch = document.getElementById('imageCatch');
   document.getElementById('imgClick').addEventListener('click', () => {
     document.getElementById('selectedimage').click();
   })
+
+  const serverHost = 'http://104.248.174.124:5000/upload_image';
+  const webHost = 'http://localhost:3000';
 
 
 
@@ -204,14 +208,34 @@
   }
 
   var canvas = new fabric.Canvas(document.getElementById("canvasId"));
-  function convertToImagen() {
-    var svg = canvas.toDataURL('image/png');
-    const anchor = document.createElement('a');
-    anchor.href = svg;
-    anchor.download = "wall.png";
-    anchor.click();
+  window.addEventListener('message', e => {
+    if (e.data === 'saveImageSketchBoard') {
+      convertToImagen();
+    }
+    else {
+      var svg = canvas.toDataURL('image/png');
+      parent.postMessage({ base64: svg.split(',')[1], for: "CheckOut" }, webHost);
+    }
+  });
+  async function convertToImagen() {
+
+    var svg = canvas.toDataURL('image/png').split(',')[1];
+    let saveImage = await fetch(serverHost, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ uid: 1, file: svg, image_name: 'wall.png' })
+    })
+    const res = await saveImage.text();
+    const result = await JSON.parse(res);
+    if (result.status) {
+      parent.postMessage({ id: result.id, for: "SketchBoard" }, webHost);
+    }
   }
-  canvas.setBackgroundImage("http://localhost:8000/static/wall.jpg", canvas.renderAll.bind(canvas), {
+  canvas.setBackgroundImage(imgCatch.value, canvas.renderAll.bind(canvas), {
+    crossOrigin: 'anonymous',
     // Optionally add an opacity lvl to the image
     backgroundImageOpacity: 0.5,
     // should the image be resized to fit the container?
@@ -221,9 +245,6 @@
   $("#disable_pen").click((e) => {
     canvas.isDrawingMode = false;
   });
-  $("#save").click((e) => {
-    convertToImagen()
-  })
 
   $("#enable_pen").click((e) => {
     canvas.isDrawingMode = true;
