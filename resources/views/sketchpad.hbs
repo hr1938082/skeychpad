@@ -209,24 +209,25 @@
 
   var canvas = new fabric.Canvas(document.getElementById("canvasId"));
   window.addEventListener('message', e => {
-    if (e.data === 'saveImageSketchBoard') {
-      convertToImagen();
+    if (e.data.hasOwnProperty('userId')) {
+      convertToImagen(e.data.userId);
     }
     else {
       var svg = canvas.toDataURL('image/png');
       parent.postMessage({ base64: svg.split(',')[1], for: "CheckOut" }, webHost);
     }
   });
-  async function convertToImagen() {
+  async function convertToImagen(userId) {
 
     var svg = canvas.toDataURL('image/png').split(',')[1];
+    console.log({ uid: userId, file: svg, image_name: 'wall.png' });
     let saveImage = await fetch(serverHost, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json"
       },
-      body: JSON.stringify({ uid: 1, file: svg, image_name: 'wall.png' })
+      body: JSON.stringify({ uid: userId, file: svg, image_name: 'wall.png' })
     })
     const res = await saveImage.text();
     const result = await JSON.parse(res);
