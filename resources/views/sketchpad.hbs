@@ -188,7 +188,7 @@
     document.getElementById('selectedimage').click();
   })
 
-  const serverHost = 'http://104.248.174.124:5000/upload_image';
+  const serverHost = 'http://104.248.174.124:5000/';
   const webHost = 'http://localhost:3000';
 
 
@@ -209,8 +209,12 @@
 
   var canvas = new fabric.Canvas(document.getElementById("canvasId"));
   window.addEventListener('message', e => {
+    console.log(e.data, 'msggggggggggggggggggggggggg');
     if (e.data.hasOwnProperty('userId')) {
       convertToImagen(e.data.userId);
+    }
+    else if (e.data.hasOwnProperty('name')) {
+      updateWall(e.data.name);
     }
     else {
       var svg = canvas.toDataURL('image/png');
@@ -220,8 +224,7 @@
   async function convertToImagen(userId) {
 
     var svg = canvas.toDataURL('image/png').split(',')[1];
-    console.log({ uid: userId, file: svg, image_name: 'wall.png' });
-    let saveImage = await fetch(serverHost, {
+    let saveImage = await fetch(serverHost + "upload_image", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -233,6 +236,23 @@
     const result = await JSON.parse(res);
     if (result.status) {
       parent.postMessage({ id: result.id, for: "SketchBoard" }, webHost);
+    }
+  }
+
+  async function updateWall(name) {
+    var svg = canvas.toDataURL('image/png').split(',')[1];
+    let updateImage = await fetch(serverHost + "update_wall_image", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ image: svg, name: name })
+    })
+    const res = await updateImage.text();
+    const result = await JSON.parse(res);
+    if (result.status) {
+      parent.postMessage({ status: true }, webHost);
     }
   }
   canvas.setBackgroundImage(imgCatch.value, canvas.renderAll.bind(canvas), {
