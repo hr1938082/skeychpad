@@ -189,7 +189,7 @@
   })
 
   const serverHost = 'http://104.248.174.124:5000/';
-  const webHost = 'http://104.248.174.124:3003';
+  const webHost = 'http://localhost:3000';
 
 
 
@@ -209,7 +209,6 @@
 
   var canvas = new fabric.Canvas(document.getElementById("canvasId"));
   window.addEventListener('message', e => {
-    console.log(e.data, 'msggggggggggggggggggggggggg');
     if (e.data.hasOwnProperty('userId')) {
       convertToImagen(e.data.userId);
     }
@@ -224,6 +223,8 @@
   async function convertToImagen(userId) {
 
     var svg = canvas.toDataURL('image/png').split(',')[1];
+
+    console.log(svg, 'serverrrrrrrrrrrrrrrrrrrrrrrrr');
     let saveImage = await fetch(serverHost + "upload_image", {
       method: "POST",
       headers: {
